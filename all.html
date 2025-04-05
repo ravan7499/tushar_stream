@@ -1,0 +1,270 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>@tushar_stream</title>
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <style>
+    :root {
+      --primary-color: #00c3ff;
+      --hover-color: #0099cc;
+    }
+
+    body {
+      margin: 0;
+      padding: 20px;
+      background: #0f0f0f;
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    #player {
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+      position: relative;
+      aspect-ratio: 16/9;
+    }
+
+    .language-buttons {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-top: 16px;
+      }
+      
+
+    .lang-btn {
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(4px);
+      white-space: nowrap;
+    }
+
+    .lang-btn:hover {
+      background: var(--hover-color);
+    }
+
+    .lang-btn.active {
+      background: var(--primary-color);
+      transform: scale(1.05);
+      box-shadow: 0 2px 8px rgba(0, 195, 255, 0.4);
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      #player {
+        border-radius: 8px;
+      }
+
+      .language-buttons {
+        bottom: 60px;
+        gap: 4px;
+      }
+
+      .lang-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .language-buttons {
+        bottom: 55px;
+      }
+
+      .lang-btn {
+        padding: 5px 10px;
+        font-size: 11px;
+      }
+    }
+    .telegram-button {
+        margin-top: 20px;
+        text-align: center;
+      }
+      
+      .telegram-button a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #229ED9;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        text-decoration: none;
+        font-weight: bold;
+        font-size: 14px;
+        transition: background 0.3s ease;
+      }
+      
+      .telegram-button a:hover {
+        background: #1c8cc0;
+      }
+      
+      .telegram-button img {
+        width: 20px;
+        height: 20px;
+        filter: brightness(0) invert(1); /* makes sure icon is white */
+      }
+      
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="player"></div>
+    <div class="language-buttons"></div>
+  </div>
+
+  <div class="telegram-button">
+  <a href="https://t.me/tushar_stream" target="_blank" rel="noopener">
+    <img src="https://cdn.jsdelivr.net/npm/simple-icons@v9/icons/telegram.svg" alt="Telegram" />
+    Join Telegram
+  </a>
+</div>
+
+
+  <script src="https://cdn.plyr.io/3.7.8/plyr.polyfilled.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
+  <script>
+    const streams = {
+      HINDI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_HIN_IDC_MOB/Fallback/index.m3u8',
+      ENGLISH: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_ENG_IDC_MOB/Fallback/index.m3u8',
+      GUJARATI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_Guj_IDC_MOB/Fallback/index.m3u8',
+      TAMIL: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_TAM_IDC_MOB/Fallback/index.m3u8',
+      TELUGU: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_TEL_IDC_MOB/Fallback/index.m3u8',
+      MARATHI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_MAR_IDC_MOB/Fallback/index.m3u8',
+      BENGALI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_BEN_IDC_MOB/Fallback/index.m3u8',
+      KANNADA: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_KAN_IDC_MOB/Fallback/index.m3u8',
+      HARYANVI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_HAR_IDC_MOB/Fallback/index.m3u8',
+      BHOJPURI: 'https://prod-ent-live-gm.jiocinema.com/bpk-tv/JS_M1_IPL25_Bhoj_IDC_MOB/Fallback/index.m3u8'
+    };
+
+    let player;
+    let hls;
+
+    const defaultOptions = {
+      controls: [
+        'play-large',
+        'play',
+        'progress',
+        'current-time',
+        'mute',
+        'volume',
+        'settings',
+        'airplay',
+        'fullscreen'
+      ],
+      settings: ['quality'],
+      quality: {
+        default: 0,
+        options: [],
+        forced: true,
+        onChange: (quality) => updateQuality(quality)
+      },
+      i18n: {
+        qualityLabel: {
+          0: 'Auto'
+        }
+      }
+    };
+
+    function initPlayer(url) {
+      const container = document.getElementById('player');
+      container.innerHTML = '';
+
+      const video = document.createElement('video');
+      video.setAttribute('controls', '');
+      video.setAttribute('playsinline', '');
+      video.classList.add('plyr__video');
+      container.appendChild(video);
+
+      if (hls) hls.destroy();
+      if (player) player.destroy();
+
+      hls = new Hls();
+      hls.loadSource(url);
+      hls.attachMedia(video);
+
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        const availableQualities = hls.levels.map((l) => l.height).sort((a, b) => b - a);
+        availableQualities.unshift(0); // 0 = Auto
+        defaultOptions.quality.options = availableQualities;
+
+        player = new Plyr(video, defaultOptions);
+        player.quality = 0;
+      });
+
+      hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+        const level = hls.levels[data.level];
+        const span = document.querySelector(".plyr__menu__container [data-plyr='quality'][value='0'] span");
+        if (span) {
+          if (hls.autoLevelEnabled) {
+            span.innerHTML = "AUTO (" + level.height + "p)";
+          } else {
+            span.innerHTML = "AUTO";
+          }
+        }
+      });
+    }
+
+    function updateQuality(newQuality) {
+      if (newQuality === 0) {
+        hls.currentLevel = -1;
+      } else {
+        const levelIndex = hls.levels.findIndex((l) => l.height === newQuality);
+        if (levelIndex !== -1) {
+          hls.currentLevel = levelIndex;
+        }
+      }
+    }
+
+    function createLanguageButtons() {
+      const container = document.querySelector('.language-buttons');
+      Object.keys(streams).forEach(lang => {
+        const btn = document.createElement('button');
+        btn.className = 'lang-btn';
+        btn.textContent = lang;
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          initPlayer(streams[lang]);
+        });
+        container.appendChild(btn);
+      });
+      document.querySelector('.lang-btn').classList.add('active');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (confirm("Join our Telegram Group to get All Updates @tushar_stream ") == true) {
+          window.open("https://t.me/tushar_stream", '_blank');
+        }
+        if (confirm("Join our Telegram Group to get All Updates @tushar_stream ") == true) {
+          window.open("https://t.me/streamxcrick", '_blank');
+        }
+      
+        createLanguageButtons();
+        initPlayer(streams.HINDI);
+      });
+      
+  </script>
+</body>
+</html>
+
+
